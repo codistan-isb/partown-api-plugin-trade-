@@ -1,0 +1,137 @@
+enum tradeTypeEnum {
+  offer
+  bid
+}
+
+enum approvalStatusEnum {
+  pending
+  approved
+  cancelled
+}
+
+enum completionStatusEnum {
+  completed
+  inProgress
+}
+
+type trade implements Node {
+  _id: ID!
+  property: CatalogItemProduct
+  buyerId: String
+  sellerId: String
+  productId: String!
+  price: Float!
+  area: Float!
+  expirationTime: String
+  tradeType: tradeTypeEnum!
+  decorum: String
+  minQty: Float!
+  currencyUnit: String
+  cancellationReason: String
+  endDate: Date
+  createdBy: String
+  createdByInfo: Account
+  isDisabled: Boolean
+  completionStatus: completionStatusEnum
+}
+
+input tradeInput {
+  buyerId: String
+  sellerId: String
+  productId: String
+  price: Float
+  area: Float
+  expirationTime: String
+  tradeType: tradeTypeEnum
+  approvalStatus: approvalStatusEnum
+  decorum: String
+  minQty: Float
+  currencyUnit: String
+  cancellationReason: String
+  endDate: Date
+  createdBy: String
+}
+
+input tradeFiltersInput {
+  byUser: String
+  byProperty: String
+}
+
+type tradeOutput {
+  _id: String
+}
+
+type UnitOwnership implements Node {
+  _id: ID!
+  productId: String
+  productDetails: CatalogItemProduct
+  amount: Float!
+  lockedUnits: Float
+  sellerId: String
+  tradeId: String
+  tradeInfo: trade
+  tradeType: tradeTypeEnum
+  ownerId: String
+  ownerInfo: Account
+}
+
+input UnitOwnershipInput {
+  buyerId: String
+  unitsOwned: Float!
+  lockedUnits: Float
+  sellerId: String
+  tradeId: String
+  tradeType: tradeTypeEnum
+  productId: String
+}
+
+input SubscribePropertyInput {
+  productId: String!
+  tradeId: String!
+  units: Float!
+  price: Float!
+  serviceCharge: Float!
+  ownerId: String!
+  sellerId: String!
+  minQty: Float!
+}
+
+input sellPropertyInput {
+  productId: String!
+  tradeId: String!
+  units: Float!
+  price: Float!
+  serviceCharge: Float!
+  ownerId: String
+  buyerId: String!
+  sellerId: String
+  minQty: Float!
+}
+
+extend type Mutation {
+  makePrimaryOwner(ownerId: String!, productId: String!): Boolean
+  createTradePrimary(input: tradeInput!): tradeOutput
+  createTradeForProperty(input: tradeInput!): tradeOutput
+  subscribeToPrimaryProperty(input: SubscribePropertyInput!): Boolean
+  purchaseUnits(input: sellPropertyInput): Boolean
+  sellUnits(input: sellPropertyInput): Boolean
+  updateOwnerShip(ownerId: String!, productId: String!, units: Float!): Boolean
+}
+
+type OwnershipOutput {
+  _id: ID
+  ownerId: String
+  sellerId: String
+  unitsOwned: Float
+  productId: String
+  tradeType: String
+  ownerInfo: Account
+}
+
+extend type Query {
+  getTrades(input: tradeFiltersInput): [trade]
+  getTradesForProperty(productId: String!, type: tradeTypeEnum): [trade]
+  myTrades(productId: String!): [trade]
+  getUnitOwnership(productId: String!, ownerId: String!): UnitOwnership
+  getUserProperties: [UnitOwnership]
+}
